@@ -1,6 +1,7 @@
 package chess;
 
 import chess.calculator.BishopMovesCalculator;
+import chess.calculator.RookMovesCalculator;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -57,6 +58,7 @@ public class ChessPiece {
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         return switch (type) {
             case BISHOP -> new BishopMovesCalculator().calculateLegalMoves(myPosition, board);
+            case ROOK -> new RookMovesCalculator().calculateLegalMoves(myPosition, board);
             default -> new ArrayList<>();
         };
     }
