@@ -2,6 +2,7 @@ package chess;
 
 import chess.calculator.BishopMovesCalculator;
 import chess.calculator.KnightMovesCalculator;
+import chess.calculator.QueenMovesCalculator;
 import chess.calculator.RookMovesCalculator;
 
 import java.util.ArrayList;
@@ -61,6 +62,7 @@ public class ChessPiece {
             case BISHOP -> new BishopMovesCalculator().calculateLegalMoves(myPosition, board);
             case ROOK -> new RookMovesCalculator().calculateLegalMoves(myPosition, board);
             case KNIGHT -> new KnightMovesCalculator().calculateLegalMoves(myPosition, board);
+            case QUEEN -> new QueenMovesCalculator().calculateLegalMoves(myPosition, board);
             default -> new ArrayList<>();
         };
     }

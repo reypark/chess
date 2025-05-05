@@ -5,13 +5,13 @@ import chess.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RookMovesCalculator implements PieceMovesCalculator {
+public class QueenMovesCalculator implements PieceMovesCalculator {
 
     @Override
     public List<ChessMove> calculateLegalMoves(ChessPosition from, ChessBoard board) {
         List<ChessMove> moves = new ArrayList<>();
         int[][] directions = {
-                {-1, 0}, {1, 0}, {0, -1}, {0, 1}
+                {-1, 0}, {1, 0}, {0, -1}, {0, 1}, {-1, -1}, {-1, 1}, {1, -1}, {1, 1}
         };
 
         ChessPiece piece = board.getPiece(from);
@@ -20,11 +20,12 @@ public class RookMovesCalculator implements PieceMovesCalculator {
         for (int[] dir : directions) {
             int row = from.getRow();
             int col = from.getColumn();
+
             while (true) {
                 row += dir[0];
                 col += dir[1];
-                if (row < 1 || row > 8 || col < 1 || col > 8) break;
 
+                if (row < 1 || row > 8 || col < 1 || col > 8) break;
                 ChessPosition to = new ChessPosition(row, col);
                 ChessPiece target = board.getPiece(to);
 
@@ -32,7 +33,7 @@ public class RookMovesCalculator implements PieceMovesCalculator {
                     moves.add(new ChessMove(from, to, null));
                 } else {
                     if (target.getTeamColor() != piece.getTeamColor()) {
-                        moves.add(new ChessMove(from, to, null)); // capture
+                        moves.add(new ChessMove(from, to, null));
                     }
                     break;
                 }
