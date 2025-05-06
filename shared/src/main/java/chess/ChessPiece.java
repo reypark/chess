@@ -61,6 +61,7 @@ public class ChessPiece {
             case KNIGHT -> new KnightMovesCalculator().calculateLegalMoves(myPosition, board);
             case QUEEN -> new QueenMovesCalculator().calculateLegalMoves(myPosition, board);
             case PAWN -> new PawnMovesCalculator().calculateLegalMoves(myPosition, board);
+            case KING -> new KingMovesCalculator().calculateLegalMoves(myPosition, board);
             default -> new ArrayList<>();
         };
     }
