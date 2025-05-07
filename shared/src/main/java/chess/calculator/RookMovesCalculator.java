@@ -11,7 +11,9 @@ public class RookMovesCalculator extends PieceMovesCalculator {
     public List<ChessMove> calculateLegalMoves(ChessPosition from, ChessBoard board) {
         List<ChessMove> moves = new ArrayList<>();
         ChessPiece piece = board.getPiece(from);
-        if (piece == null) return moves;
+        if (piece == null) {
+            return moves;
+        }
 
         int[][] directions = {
                 {-1, 0}, {1, 0}, {0, -1}, {0, 1}

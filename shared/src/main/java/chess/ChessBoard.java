@@ -68,14 +68,20 @@ public class ChessBoard {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ChessBoard other)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ChessBoard other)) {
+            return false;
+        }
 
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
                 ChessPiece a = this.squares[row][col];
                 ChessPiece b = other.squares[row][col];
-                if (!Objects.equals(a, b)) return false;
+                if (!Objects.equals(a, b)) {
+                    return false;
+                }
             }
         }
         return true;

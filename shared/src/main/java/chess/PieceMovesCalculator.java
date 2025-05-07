@@ -27,7 +27,9 @@ public abstract class PieceMovesCalculator {
                 col += dir[1];
                 ChessPosition to = new ChessPosition(row, col);
 
-                if (!isInBounds(to)) break;
+                if (!isInBounds(to)) {
+                    break;
+                }
 
                 ChessPiece target = board.getPiece(to);
                 if (target == null) {

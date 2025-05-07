@@ -11,7 +11,9 @@ public class PawnMovesCalculator extends PieceMovesCalculator {
     public List<ChessMove> calculateLegalMoves(ChessPosition from, ChessBoard board) {
         List<ChessMove> moves = new ArrayList<>();
         ChessPiece pawn = board.getPiece(from);
-        if (pawn == null) return moves;
+        if (pawn == null) {
+            return moves;
+        }
 
         int direction = (pawn.getTeamColor() == ChessGame.TeamColor.WHITE) ? 1 : -1;
         int startRow = (pawn.getTeamColor() == ChessGame.TeamColor.WHITE) ? 2 : 7;

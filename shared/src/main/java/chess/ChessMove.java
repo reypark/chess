@@ -53,8 +53,12 @@ public class ChessMove {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ChessMove other)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ChessMove other)) {
+            return false;
+        }
         return startPosition.equals(other.startPosition)
                 && endPosition.equals(other.endPosition)
                 && ((promotionPiece == null && other.promotionPiece == null)
