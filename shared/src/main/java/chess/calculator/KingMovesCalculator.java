@@ -5,7 +5,7 @@ import chess.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class KingMovesCalculator implements PieceMovesCalculator {
+public class KingMovesCalculator extends PieceMovesCalculator {
 
     @Override
     public List<ChessMove> calculateLegalMoves(ChessPosition from, ChessBoard board) {
@@ -17,22 +17,6 @@ public class KingMovesCalculator implements PieceMovesCalculator {
                 {-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}
         };
 
-        int row = from.getRow();
-        int col = from.getColumn();
-
-        for (int[] dir : directions) {
-            int newRow = row + dir[0];
-            int newCol = col + dir[1];
-
-            if (newRow >= 1 && newRow <= 8 && newCol >= 1 && newCol <= 8) {
-                ChessPosition to = new ChessPosition(newRow, newCol);
-                ChessPiece target = board.getPiece(to);
-
-                if (target == null || target.getTeamColor() != piece.getTeamColor()) {
-                    moves.add(new ChessMove(from, to, null));
-                }
-            }
-        }
-        return moves;
+        return generateSingleStepMoves(from, board, piece, directions);
     }
 }

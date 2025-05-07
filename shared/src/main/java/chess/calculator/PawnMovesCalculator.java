@@ -5,7 +5,7 @@ import chess.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PawnMovesCalculator implements PieceMovesCalculator {
+public class PawnMovesCalculator extends PieceMovesCalculator {
 
     @Override
     public List<ChessMove> calculateLegalMoves(ChessPosition from, ChessBoard board) {
@@ -57,10 +57,5 @@ public class PawnMovesCalculator implements PieceMovesCalculator {
         } else {
             moves.add(new ChessMove(from, to, null));
         }
-    }
-
-    private boolean isInBounds(ChessPosition pos) {
-        int r = pos.getRow(), c = pos.getColumn();
-        return r >= 1 && r <= 8 && c >= 1 && c <= 8;
     }
 }

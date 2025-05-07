@@ -2,8 +2,8 @@ package chess;
 
 import chess.calculator.*;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 
 /**
  * Represents a single chess piece
@@ -62,7 +62,19 @@ public class ChessPiece {
             case QUEEN -> new QueenMovesCalculator().calculateLegalMoves(myPosition, board);
             case PAWN -> new PawnMovesCalculator().calculateLegalMoves(myPosition, board);
             case KING -> new KingMovesCalculator().calculateLegalMoves(myPosition, board);
-            default -> new ArrayList<>();
         };
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ChessPiece other)) return false;
+        return getTeamColor() == other.getTeamColor() &&
+                getPieceType() == other.getPieceType();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getTeamColor(), getPieceType());
     }
 }
