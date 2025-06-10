@@ -1,6 +1,8 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -51,7 +53,29 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        ChessPiece piece = board.getPiece(startPosition);
+        if (piece == null) {
+            return null;
+        }
+        Collection<ChessMove> pseudoMove = piece.pieceMoves(board, startPosition);
+        List<ChessMove> legalMoves = new ArrayList<>();
+        for (ChessMove move : pseudoMove) {
+            ChessPosition from = move.getStartPosition();
+            ChessPosition to = move.getEndPosition();
+            ChessPiece movingPiece = board.getPiece(from);
+            ChessPiece capturedPiece = board.getPiece(to);
+
+            board.addPiece(from, null);
+            board.addPiece(to, movingPiece);
+            boolean leavesKingInCheck = isInCheck(movingPiece.getTeamColor());
+
+            board.addPiece(from, movingPiece);
+            board.addPiece(to, capturedPiece);
+            if (!leavesKingInCheck) {
+                legalMoves.add(move);
+            }
+        }
+        return legalMoves;
     }
 
     /**
