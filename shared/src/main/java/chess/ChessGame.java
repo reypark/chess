@@ -173,15 +173,9 @@ public class ChessGame {
     }
 
     /**
-     * Determines if the given team is in checkmate
-     *
-     * @param teamColor which team to check for checkmate
-     * @return True if the specified team is in checkmate
+     * legal move check
      */
-    public boolean isInCheckmate(TeamColor teamColor) {
-        if (!isInCheck(teamColor)) {
-            return false;
-        }
+    private boolean hasLegalMoves(TeamColor teamColor) {
         for (int r = 1; r <= 8; r++) {
             for (int c = 1; c <= 8; c++) {
                 ChessPosition pos = new ChessPosition(r, c);
@@ -189,12 +183,22 @@ public class ChessGame {
                 if (p != null && p.getTeamColor() == teamColor) {
                     Collection<ChessMove> moves = validMoves(pos);
                     if (moves != null && !moves.isEmpty()) {
-                        return false;
+                        return true;
                     }
                 }
             }
         }
-        return true;
+        return false;
+    }
+
+    /**
+     * Determines if the given team is in checkmate
+     *
+     * @param teamColor which team to check for checkmate
+     * @return True if the specified team is in checkmate
+     */
+    public boolean isInCheckmate(TeamColor teamColor) {
+        return isInCheck(teamColor) && !hasLegalMoves(teamColor);
     }
 
     /**
@@ -205,22 +209,7 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        if (isInCheck(teamColor)) {
-            return false;
-        }
-        for (int r = 1; r <= 8; r++) {
-            for (int c = 1; c <= 8; c++) {
-                ChessPosition pos = new ChessPosition(r, c);
-                ChessPiece p = board.getPiece(pos);
-                if (p != null && p.getTeamColor() == teamColor) {
-                    Collection<ChessMove> moves = validMoves(pos);
-                    if (moves != null && !moves.isEmpty()) {
-                        return false;
-                    }
-                }
-            }
-        }
-        return true;
+        return !isInCheck(teamColor) && !hasLegalMoves(teamColor);
     }
 
     /**
