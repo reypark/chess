@@ -27,78 +27,74 @@ public class Server {
 
         // Register your endpoints and handle exceptions here.
         Spark.delete("/db", (req, res) -> {
+            res.type("application/json");
             try {
                 dao.clear();
                 res.status(200);
                 return "{}";
             } catch (DataAccessException e) {
                 res.status(500);
-                return "{ \"message\": \"Error: " + e.getMessage() + "\" }";
+                return errorJson(e.getMessage());
             }
         });
 
         Spark.post("/user", (req, res) -> {
-            UserData request;
-            try {
-                request = gson.fromJson(req.body(), UserData.class);
-            } catch (JsonSyntaxException ex) {
+            res.type("application/json");
+
+            UserData user = parseOrBadRequest(req, res, UserData.class);
+            if (user == null) return res.body();
+
+            if (user.username() == null || user.password() == null || user.email() == null) {
                 res.status(400);
-                return "{ \"message\": \"Error: bad request\" }";
+                return errorJson("bad request");
             }
-            if (request.username() == null
-                    || request.password() == null
-                    || request.email() == null) {
-                res.status(400);
-                return "{ \"message\": \"Error: bad request\" }";
-            }
+
             try {
-                dao.createUser(request);
+                dao.createUser(user);
             } catch (DataAccessException e) {
                 res.status(403);
-                return "{ \"message\": \"Error: already taken\" }";
+                return errorJson("already taken");
             }
+
             String token = makeToken();
-            dao.createAuth(new AuthData(token, request.username()));
+            dao.createAuth(new AuthData(token, user.username()));
+
             res.status(200);
             return gson.toJson(Map.of(
-                    "username", request.username(),
+                    "username",  user.username(),
                     "authToken", token
             ));
         });
 
         Spark.post("/session", (req, res) -> {
-            UserData request;
-            try {
-                request = gson.fromJson(req.body(), UserData.class);
-            } catch (JsonSyntaxException ex) {
-                res.status(400);
-                return "{ \"message\": \"Error: bad request\" }";
-            }
+            res.type("application/json");
 
-            if (request.username() == null || request.password() == null) {
+            UserData creds = parseOrBadRequest(req, res, UserData.class);
+            if (creds == null) return res.body();
+
+            if (creds.username() == null || creds.password() == null) {
                 res.status(400);
-                return "{ \"message\": \"Error: bad request\" }";
+                return errorJson("bad request");
             }
 
             UserData stored;
             try {
-                stored = dao.getUser(request.username());
+                stored = dao.getUser(creds.username());
             } catch (DataAccessException e) {
                 res.status(401);
-                return "{ \"message\": \"Error: unauthorized\" }";
+                return errorJson("unauthorized");
             }
-
-            if (!stored.password().equals(request.password())) {
+            if (stored == null || !stored.password().equals(creds.password())) {
                 res.status(401);
-                return "{ \"message\": \"Error: unauthorized\" }";
+                return errorJson("unauthorized");
             }
 
             String token = makeToken();
-            dao.createAuth(new AuthData(token, request.username()));
+            dao.createAuth(new AuthData(token, creds.username()));
 
             res.status(200);
             return gson.toJson(Map.of(
-                    "username",  request.username(),
+                    "username",  creds.username(),
                     "authToken", token
             ));
         });
@@ -112,5 +108,23 @@ public class Server {
     public void stop() {
         Spark.stop();
         Spark.awaitStop();
+    }
+
+    private <T> T parseOrBadRequest(Request req, Response res, Class<T> cls) {
+        try {
+            T obj = gson.fromJson(req.body(), cls);
+            if (obj == null) throw new JsonSyntaxException("null");
+            return obj;
+        } catch (JsonSyntaxException e) {
+            res.status(400);
+            res.type("application/json");
+            String body = errorJson("bad request");
+            Spark.halt(400, body);
+            return null;
+        }
+    }
+
+    private String errorJson(String msg) {
+        return gson.toJson(Map.of("message", "Error: " + msg));
     }
 }
