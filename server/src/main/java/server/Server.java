@@ -66,6 +66,43 @@ public class Server {
             ));
         });
 
+        Spark.post("/session", (req, res) -> {
+            UserData request;
+            try {
+                request = gson.fromJson(req.body(), UserData.class);
+            } catch (JsonSyntaxException ex) {
+                res.status(400);
+                return "{ \"message\": \"Error: bad request\" }";
+            }
+
+            if (request.username() == null || request.password() == null) {
+                res.status(400);
+                return "{ \"message\": \"Error: bad request\" }";
+            }
+
+            UserData stored;
+            try {
+                stored = dao.getUser(request.username());
+            } catch (DataAccessException e) {
+                res.status(401);
+                return "{ \"message\": \"Error: unauthorized\" }";
+            }
+
+            if (!stored.password().equals(request.password())) {
+                res.status(401);
+                return "{ \"message\": \"Error: unauthorized\" }";
+            }
+
+            String token = makeToken();
+            dao.createAuth(new AuthData(token, request.username()));
+
+            res.status(200);
+            return gson.toJson(Map.of(
+                    "username",  request.username(),
+                    "authToken", token
+            ));
+        });
+
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
         Spark.awaitInitialization();
