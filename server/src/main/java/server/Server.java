@@ -118,6 +118,21 @@ public class Server {
             }
         });
 
+        Spark.get("/game", (req, res) -> {
+            res.type("application/json");
+            String token = extractAuthToken(req, res);
+            if (token == null) return res.body();
+
+            try {
+                List<GameData> games = dao.listGames();
+                res.status(200);
+                return gson.toJson(Map.of("games", games));
+            } catch (DataAccessException e) {
+                res.status(500);
+                return errorJson(e.getMessage());
+            }
+        });
+
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
         Spark.awaitInitialization();
