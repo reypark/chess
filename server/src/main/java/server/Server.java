@@ -133,6 +133,29 @@ public class Server {
             }
         });
 
+        Spark.post("/game", (req, res) -> {
+            res.type("application/json");
+            String token = extractAuthToken(req, res);
+            if (token == null) return res.body();
+
+            CreateGameRequest body = parseOrBadRequest(req, res, CreateGameRequest.class);
+            if (body == null) return res.body();
+
+            if (body.gameName() == null) {
+                res.status(400);
+                return errorJson("bad request");
+            }
+
+            try {
+                int newGame = dao.createGame(new GameData(0, null, null, body.gameName(), new ChessGame()));
+                res.status(200);
+                return gson.toJson(Map.of("gameID", newGame));
+            } catch (DataAccessException ex) {
+                res.status(500);
+                return errorJson(ex.getMessage());
+            }
+        });
+
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
         Spark.awaitInitialization();
