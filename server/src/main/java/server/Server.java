@@ -156,6 +156,48 @@ public class Server {
             }
         });
 
+        Spark.put("/game", (req, res) -> {
+            res.type("application/json");
+            String token = extractAuthToken(req, res);
+            if (token == null) return res.body();
+
+            JoinGameRequest body = parseOrBadRequest(req, res, JoinGameRequest.class);
+            if (body == null) return res.body();
+
+            if (body.playerColor() == null || body.gameID() == null) {
+                res.status(400);
+                return errorJson("bad request");
+            }
+
+            try {
+                GameData game = dao.getGame(body.gameID());
+                String me = dao.getAuth(token).username();
+
+                GameData updated;
+                if ("WHITE".equalsIgnoreCase(body.playerColor())) {
+                    if (game.whiteUsername() != null) {
+                        res.status(403);
+                        return errorJson("already taken");
+                    }
+                    updated = new GameData(game.gameID(), me, game.blackUsername(), game.gameName(), game.game());
+                } else {
+                    if (game.blackUsername() != null) {
+                        res.status(403);
+                        return errorJson("already taken");
+                    }
+                    updated = new GameData(game.gameID(), game.whiteUsername(), me, game.gameName(), game.game());
+                }
+
+                dao.updateGame(updated);
+                res.status(200);
+                return "{}";
+            } catch (DataAccessException e) {
+                int code = e.getMessage().contains("not found") ? 400 : 500;
+                res.status(code);
+                return errorJson(e.getMessage());
+            }
+        });
+
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
         Spark.awaitInitialization();
