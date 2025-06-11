@@ -1,9 +1,12 @@
 package server;
 
+import chess.ChessGame;
+import model.GameData;
 import spark.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import model.UserData;
@@ -16,6 +19,9 @@ public class Server {
 
     private final DataAccess dao = new MockDataAccess();
     private final Gson gson = new Gson();
+
+    record CreateGameRequest(String gameName) {}
+    record JoinGameRequest(String playerColor, Integer gameID) {}
 
     private static String makeToken() {
         return UUID.randomUUID().toString();
@@ -40,7 +46,6 @@ public class Server {
 
         Spark.post("/user", (req, res) -> {
             res.type("application/json");
-
             UserData user = parseOrBadRequest(req, res, UserData.class);
             if (user == null) return res.body();
 
@@ -68,7 +73,6 @@ public class Server {
 
         Spark.post("/session", (req, res) -> {
             res.type("application/json");
-
             UserData creds = parseOrBadRequest(req, res, UserData.class);
             if (creds == null) return res.body();
 
@@ -99,6 +103,21 @@ public class Server {
             ));
         });
 
+        Spark.delete("/session", (req, res) -> {
+            res.type("application/json");
+            String token = extractAuthToken(req, res);
+            if (token == null) return res.body();
+
+            try {
+                dao.deleteAuth(token);
+                res.status(200);
+                return "{}";
+            } catch (DataAccessException e) {
+                res.status(500);
+                return errorJson(e.getMessage());
+            }
+        });
+
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
         Spark.awaitInitialization();
@@ -108,6 +127,25 @@ public class Server {
     public void stop() {
         Spark.stop();
         Spark.awaitStop();
+    }
+
+    private String extractAuthToken(Request req, Response res) {
+        res.type("application/json");
+        String token = req.headers("authorization");
+        if (token == null || token.isBlank()) {
+            res.status(401);
+            res.body(errorJson("unauthorized"));
+            return null;
+        }
+
+        try {
+            dao.getAuth(token);
+        } catch (DataAccessException e) {
+            res.status(401);
+            res.body(errorJson("unauthorized"));
+            return null;
+        }
+        return token;
     }
 
     private <T> T parseOrBadRequest(Request req, Response res, Class<T> cls) {
