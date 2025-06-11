@@ -7,8 +7,7 @@ import model.UserData;
 import java.util.List;
 
 public class MySqlDataAccess implements DataAccess{
-    public MySqlDataAccess() throws DataAccessException {
-        DatabaseManager.createDatabase();
+    public MySqlDataAccess()  {
     }
 
     @Override

@@ -1,6 +1,7 @@
 package server;
 
 import chess.ChessGame;
+import dataaccess.DatabaseManager;
 import dataaccess.MySqlDataAccess;
 import model.GameData;
 import spark.*;
@@ -12,13 +13,14 @@ import java.util.UUID;
 import model.UserData;
 import model.AuthData;
 import dataaccess.DataAccess;
-import dataaccess.MockDataAccess;
 import dataaccess.DataAccessException;
 
 public class Server {
 
     private final DataAccess dao;
     public Server() throws DataAccessException {
+        DatabaseManager.createDatabase();
+        DatabaseManager.createTables();
         this.dao = new MySqlDataAccess();
     }
 
