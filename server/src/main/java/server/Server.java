@@ -70,23 +70,24 @@ public class Server {
 
         Spark.post("/session", (req, res) -> {
             res.type("application/json");
-            UserData creds = parseOrBadRequest(req, res, UserData.class);
 
-            if (creds.username() == null
-                    || creds.password() == null) {
-                Spark.halt(400, errorJson("bad request"));
+            UserData creds = parseOrBadRequest(req, res, UserData.class);
+            if (creds == null) return res.body();
+
+            if (creds.username() == null || creds.password() == null) {
+                res.status(400);
+                return errorJson("bad request");
             }
 
-            UserData stored;
-            try {
-                stored = dao.getUser(creds.username());
-            } catch (DataAccessException e) {
-                Spark.halt(401, errorJson("unauthorized"));
-                return null;
+            UserData stored = dao.getUser(creds.username());
+            if (stored == null) {
+                res.status(401);
+                return errorJson("unauthorized");
             }
 
             if (!stored.password().equals(creds.password())) {
-                Spark.halt(401, errorJson("unauthorized"));
+                res.status(401);
+                return errorJson("unauthorized");
             }
 
             String token = makeToken();
