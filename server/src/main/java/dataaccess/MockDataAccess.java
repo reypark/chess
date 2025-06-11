@@ -47,8 +47,12 @@ public class MockDataAccess implements DataAccess {
     }
 
     @Override
-    public AuthData getAuth(String token) {
-        return auths.get(token);
+    public AuthData getAuth(String token) throws DataAccessException {
+        AuthData a = auths.get(token);
+        if (a == null) {
+            throw new DataAccessException("Unauthorized");
+        }
+        return a;
     }
 
     @Override
@@ -72,8 +76,12 @@ public class MockDataAccess implements DataAccess {
     }
 
     @Override
-    public GameData getGame(int gameID) {
-        return games.get(gameID);
+    public GameData getGame(int gameID) throws DataAccessException {
+        GameData g = games.get(gameID);
+        if (g == null) {
+            throw new DataAccessException("Game not found");
+        }
+        return g;
     }
 
     @Override
