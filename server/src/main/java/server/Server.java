@@ -1,6 +1,7 @@
 package server;
 
 import chess.ChessGame;
+import dataaccess.MySqlDataAccess;
 import model.GameData;
 import spark.*;
 import com.google.gson.Gson;
@@ -16,7 +17,11 @@ import dataaccess.DataAccessException;
 
 public class Server {
 
-    private final DataAccess dao = new MockDataAccess();
+    private final DataAccess dao;
+    public Server() throws DataAccessException {
+        this.dao = new MySqlDataAccess();
+    }
+
     private final Gson gson = new Gson();
 
     record CreateGameRequest(String gameName) {}
