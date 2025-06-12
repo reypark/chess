@@ -19,7 +19,6 @@ import com.google.gson.JsonSyntaxException;
 import java.util.Map;
 import java.util.UUID;
 
-
 public class Server {
 
     private final DataAccess dao;
@@ -240,7 +239,7 @@ public class Server {
                 Spark.halt(401, errorJson("unauthorized"));
             }
         } catch (DataAccessException e) {
-            Spark.halt(401, errorJson("unauthorized"));
+            Spark.halt(500, errorJson(e.getMessage()));
         }
         return token;
     }
