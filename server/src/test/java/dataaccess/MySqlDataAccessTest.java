@@ -6,10 +6,7 @@ import model.UserData;
 import org.junit.jupiter.api.*;
 import chess.*;
 
-import dataaccess.DataAccessException;
 import org.mindrot.jbcrypt.BCrypt;
-
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -30,9 +27,6 @@ public class MySqlDataAccessTest {
         dao.clear();
     }
 
-    //
-    // clear(): positive only
-    //
     @Test
     @DisplayName("clear removes everything")
     void clearWorks() throws DataAccessException {
@@ -49,20 +43,17 @@ public class MySqlDataAccessTest {
         assertNull(dao.getGame(id),      "no game after clear");
     }
 
-    //
-    // createUser + getUser
-    //
     @Test
     @DisplayName("createUser + getUser success")
     void createAndGetUser() throws DataAccessException {
-        var u = new UserData("alice","pw","alice@mail");
+        var u = new UserData("alex","pw","alex@mail");
         dao.createUser(u);
-        var stored = dao.getUser("alice");
+        var stored = dao.getUser("alex");
         assertNotNull(stored);
-        assertEquals("alice",     stored.username());
+        assertEquals("alex",     stored.username());
         assertNotEquals("pw",     stored.password(),   "Password must be hashed");
         assertTrue( BCrypt.checkpw("pw", stored.password()), "Hash should match pw");
-        assertEquals("alice@mail", stored.email());
+        assertEquals("alex@mail", stored.email());
     }
 
     @Test
@@ -80,19 +71,16 @@ public class MySqlDataAccessTest {
         assertNull(dao.getUser("no-such-user"));
     }
 
-    //
-    // createAuth + getAuth + deleteAuth
-    //
     @Test
     @DisplayName("createAuth + getAuth success")
     void createAndGetAuth() throws DataAccessException {
-        dao.createUser(new UserData("carol","pw","e"));
+        dao.createUser(new UserData("cam","pw","e"));
         var a = new AuthData("tok","carol");
         dao.createAuth(a);
         var stored = dao.getAuth("tok");
         assertNotNull(stored);
         assertEquals("tok",  stored.authToken());
-        assertEquals("carol", stored.username());
+        assertEquals("cam", stored.username());
     }
 
     @Test
@@ -120,9 +108,6 @@ public class MySqlDataAccessTest {
         assertNull(dao.getAuth("t2"));
     }
 
-    //
-    // createGame, getGame, listGames
-    //
     @Test
     @DisplayName("createGame + getGame + listGames succeed (initial board)")
     void createGetListGame() throws DataAccessException {
@@ -138,7 +123,6 @@ public class MySqlDataAccessTest {
         assertEquals("MyGame", out.gameName());
         assertNull(out.whiteUsername());
         assertNull(out.blackUsername());
-        // verify we got back the same initial board
         assertEquals(initial, out.game());
 
         var all = dao.listGames();
@@ -149,7 +133,6 @@ public class MySqlDataAccessTest {
     @Test
     @DisplayName("createGame invalid data throws")
     void createGameInvalid() {
-        // missing gameName should fail
         assertThrows(DataAccessException.class, () ->
                 dao.createGame(new GameData(0, null, null, null, new ChessGame()))
         );
@@ -167,9 +150,6 @@ public class MySqlDataAccessTest {
         assertTrue(dao.listGames().isEmpty());
     }
 
-    //
-    // updateGame: both players and game‐state
-    //
     @Test
     @DisplayName("updateGame success: set player and board")
     void updateGameSuccess() throws DataAccessException, InvalidMoveException {
@@ -186,10 +166,9 @@ public class MySqlDataAccessTest {
         GameData after = dao.getGame(id);
         assertEquals("h", after.whiteUsername());
 
-        // 2) now update the board via a real move
         ChessGame g = after.game();
         var move = new ChessMove(new ChessPosition(2,1), new ChessPosition(3,1), null);
-        g.makeMove(move);           // move white pawn from a2 to a3
+        g.makeMove(move);
         after = after.withGame(g);
         dao.updateGame(after);
 
