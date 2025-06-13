@@ -9,6 +9,16 @@ public record GameData(
         String gameName,
         ChessGame game
 ) {
+    public GameData withGame(ChessGame newGame) {
+        return new GameData(
+                this.gameID,
+                this.whiteUsername,
+                this.blackUsername,
+                this.gameName,
+                newGame
+        );
+    }
+
     public GameData withWhiteUsername(String newWhiteUsername) {
         return new GameData(
                 this.gameID,
