@@ -14,14 +14,16 @@ public class Repl {
     }
 
     public void run() {
+        facade.clearDatabase();
+
         printWelcome();
         try (Scanner scanner = new Scanner(System.in)) {
-            while (authToken == null) {
+            while (running && authToken == null) {
                 System.out.print("\nPre-login >>> ");
                 String line = scanner.nextLine().trim();
                 handlePrelogin(line);
             }
-            postLoginLoop(scanner);
+            if (authToken != null) postLoginLoop(scanner);
         }
     }
 
@@ -52,7 +54,7 @@ public class Repl {
 
     private void handleQuit() {
         System.out.println("see you later");
-        running = false;
+        System.exit(0);
     }
 
     private void handleLogin(String[] parts) {
@@ -63,8 +65,7 @@ public class Repl {
         try {
             AuthData auth = facade.login(parts[1], parts[2]);
             authToken = auth.authToken();
-            System.out.println("Logged in as " + auth.username() + "!");
-            running = false;
+            System.out.println("Logged in as " + auth.username());
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -78,8 +79,7 @@ public class Repl {
         try {
             AuthData auth = facade.register(parts[1], parts[2], parts[3]);
             authToken = auth.authToken();
-            System.out.println("Registered & logged in as " + auth.username() + "!");
-            running = false;
+            System.out.println("Registered and logged in as " + auth.username());
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -112,14 +112,39 @@ public class Repl {
         String[] parts = input.split("\\s+");
         switch (parts[0].toLowerCase()) {
             case "c", "create" -> handleCreateGame(parts);
-            case "l", "list" -> handleListGames();
-            case "j", "join" -> handleJoinGame(parts);
-            case "o", "observe" -> handleObserveGame(parts);
+//            case "l", "list" -> handleListGames();
+//            case "j", "join" -> handleJoinGame(parts);
+//            case "o", "observe" -> handleObserveGame(parts);
             case "x", "logout" -> { handleLogout(); return true; }
             case "q", "quit"   -> handleQuit();
             case "h", "help" -> showPostLoginHelp();
             default -> System.out.println("Unknown command. Type \"h\" for help.");
         }
         return false;
+    }
+
+    private void handleCreateGame(String[] parts) {
+        if (parts.length < 2) {
+            System.out.println("Usage: create <game name>");
+            return;
+        }
+        String gameName = String.join(" ", Arrays.copyOfRange(parts, 1, parts.length));
+        try {
+            int gameId = facade.createGame(authToken, gameName);
+            System.out.println("Created game \"" + gameName + "\" (ID " + gameId + ")");
+        } catch (Exception e) {
+            System.out.println("Error creating game: " + e.getMessage());
+        }
+    }
+
+    private void handleLogout() {
+        try {
+            facade.logout(authToken);
+            authToken = null;
+            System.out.println("Logged out.");
+            printWelcome();
+        } catch (Exception e) {
+            System.out.println("Logout failed: " + e.getMessage());
+        }
     }
 }

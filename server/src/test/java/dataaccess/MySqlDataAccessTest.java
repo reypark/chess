@@ -75,7 +75,7 @@ public class MySqlDataAccessTest {
     @DisplayName("createAuth + getAuth success")
     void createAndGetAuth() throws DataAccessException {
         dao.createUser(new UserData("cam","pw","e"));
-        var a = new AuthData("tok","carol");
+        var a = new AuthData("tok","cam");
         dao.createAuth(a);
         var stored = dao.getAuth("tok");
         assertNotNull(stored);

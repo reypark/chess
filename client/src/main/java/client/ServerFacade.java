@@ -51,15 +51,36 @@ public class ServerFacade {
 
             HttpResponse<String> resp = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
             if (resp.statusCode() != 200) {
-                // server returns 403 on "already taken", 400 on bad request, 500 on internal
                 throw new ServerException("HTTP " + resp.statusCode() + ": " + resp.body());
             }
-
             return gson.fromJson(resp.body(), AuthData.class);
         } catch (ServerException se) {
             throw se;
         } catch (Exception e) {
             throw new ServerException("Failed to register", e);
+        }
+    }
+
+    public int createGame(String authToken, String gameName) {
+        try {
+            var body = gson.toJson(Map.of("gameName", gameName));
+            HttpRequest req = HttpRequest.newBuilder()
+                    .uri(URI.create(baseUrl + "/game"))
+                    .header("Authorization", authToken)
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(body))
+                    .build();
+
+            HttpResponse<String> resp = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
+            if (resp.statusCode() != 200) {
+                throw new ServerException("HTTP " + resp.statusCode() + ": " + resp.body());
+            }
+
+            Map<?, ?> json = gson.fromJson(resp.body(), Map.class);
+            Number id = (Number) json.get("gameID");
+            return id.intValue();
+        } catch (Exception e) {
+            throw new ServerException("Failed to create game", e);
         }
     }
 
@@ -72,10 +93,6 @@ public class ServerFacade {
     }
 
     public List<GameData> listGames(String authToken) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-    public int createGame(String authToken, String gameName) {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
