@@ -86,7 +86,7 @@ public class Repl {
     }
 
     private void postLoginLoop(Scanner scanner) {
-        System.out.println("\n You're in.");
+        System.out.println("\nyou're in.");
         showPostLoginHelp();
         while (true) {
             System.out.print("\nChess >>> ");
