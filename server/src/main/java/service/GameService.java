@@ -35,7 +35,9 @@ public class GameService {
         }
 
         if (color.equalsIgnoreCase("WHITE")) {
-            if (g.whiteUsername() != null) throw new DataAccessException("already taken");
+            if (g.whiteUsername() != null) {
+                throw new DataAccessException("already taken");
+            }
             g = g.withWhiteUsername(user);
         } else if (color.equalsIgnoreCase("BLACK")) {
             if (g.blackUsername() != null) {

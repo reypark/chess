@@ -185,4 +185,17 @@ public class MySqlDataAccessTest {
                 dao.updateGame(fake)
         );
     }
+
+    @Test
+    @DisplayName("deleteAuth non-existent token does nothing")
+    void deleteAuthMissing() throws DataAccessException {
+        dao.deleteAuth("no-such-token");
+        assertNull(dao.getAuth("no-such-token"));
+    }
+
+    @Test
+    @DisplayName("clear on empty database does not throw")
+    void clearEmptyNoError() {
+        assertDoesNotThrow(() -> dao.clear());
+    }
 }

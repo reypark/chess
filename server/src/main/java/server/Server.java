@@ -253,7 +253,9 @@ public class Server {
     private <T> T parseOrBadRequest(Request req, Response res, Class<T> cls) {
         try {
             T obj = gson.fromJson(req.body(), cls);
-            if (obj == null) throw new JsonSyntaxException("null");
+            if (obj == null) {
+                throw new JsonSyntaxException("null");
+            }
             return obj;
         } catch (JsonSyntaxException e) {
             res.status(400);
