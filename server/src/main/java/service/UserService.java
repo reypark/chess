@@ -43,9 +43,13 @@ public class UserService {
     }
 
     public void logout(String token) throws DataAccessException {
-        if (token == null) throw new DataAccessException("Unauthorized");
+        if (token == null) {
+            throw new DataAccessException("Unauthorized");
+        }
         AuthData auth = dao.getAuth(token);
-        if (auth == null) throw new DataAccessException("Unauthorized");
+        if (auth == null) {
+            throw new DataAccessException("Unauthorized");
+        }
         dao.deleteAuth(token);
     }
 }

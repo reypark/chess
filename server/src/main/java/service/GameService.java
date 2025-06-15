@@ -30,13 +30,17 @@ public class GameService {
             throw new DataAccessException("Bad request");
         }
         GameData g = dao.getGame(gameId);
-        if (g == null) throw new DataAccessException("Game not found");
+        if (g == null) {
+            throw new DataAccessException("Game not found");
+        }
 
         if (color.equalsIgnoreCase("WHITE")) {
             if (g.whiteUsername() != null) throw new DataAccessException("already taken");
             g = g.withWhiteUsername(user);
         } else if (color.equalsIgnoreCase("BLACK")) {
-            if (g.blackUsername() != null) throw new DataAccessException("already taken");
+            if (g.blackUsername() != null) {
+                throw new DataAccessException("already taken");
+            }
             g = g.withBlackUsername(user);
         } else {
             throw new DataAccessException("Bad request");
@@ -47,7 +51,9 @@ public class GameService {
 
     public List<GameData> listGames(String token) throws DataAccessException {
         AuthData a = dao.getAuth(token);
-        if (a == null) throw new DataAccessException("Unauthorized");
+        if (a == null) {
+            throw new DataAccessException("Unauthorized");
+        }
         return dao.listGames();
     }
 }

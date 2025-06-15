@@ -137,7 +137,14 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        ChessPosition kingPos = null;
+        ChessPosition kingPos = findKing(teamColor);
+        if (kingPos == null) {
+            return false;
+        }
+        return isPositionAttacked(kingPos, teamColor);
+    }
+
+    private ChessPosition findKing(TeamColor teamColor) {
         for (int r = 1; r <= 8; r++) {
             for (int c = 1; c <= 8; c++) {
                 ChessPosition pos = new ChessPosition(r, c);
@@ -145,32 +152,36 @@ public class ChessGame {
                 if (p != null
                         && p.getTeamColor() == teamColor
                         && p.getPieceType() == ChessPiece.PieceType.KING) {
-                    kingPos = pos;
-                    break;
+                    return pos;
                 }
             }
-            if (kingPos != null) break;
         }
-        if (kingPos == null) {
-            return false;
-        }
+        return null;
+    }
 
+    private boolean isPositionAttacked(ChessPosition position, TeamColor ownColor) {
         for (int r = 1; r <= 8; r++) {
             for (int c = 1; c <= 8; c++) {
                 ChessPosition pos = new ChessPosition(r, c);
                 ChessPiece p = board.getPiece(pos);
-                if (p != null && p.getTeamColor() != teamColor) {
-
-                    for (ChessMove m : p.pieceMoves(board, pos)) {
-                        if (m.getEndPosition().equals(kingPos)) {
-                            return true;
-                        }
-                    }
+                if (p != null && p.getTeamColor() != ownColor && canAttack(p, pos, position)) {
+                    return true;
                 }
             }
         }
         return false;
     }
+
+    private boolean canAttack(ChessPiece attacker, ChessPosition from, ChessPosition target) {
+        for (ChessMove m : attacker.pieceMoves(board, from)) {
+            if (m.getEndPosition().equals(target)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
 
     /**
      * legal move check
@@ -232,8 +243,12 @@ public class ChessGame {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ChessGame other)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ChessGame other)) {
+            return false;
+        }
         return teamTurn == other.teamTurn && Objects.equals(board, other.board);
     }
 

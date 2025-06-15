@@ -57,7 +57,9 @@ public class MySqlDataAccess implements DataAccess{
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
-                if (!rs.next()) return null;
+                if (!rs.next()) {
+                    return null;
+                }
                 return new UserData(
                         rs.getString("username"),
                         rs.getString("password"),
@@ -89,7 +91,9 @@ public class MySqlDataAccess implements DataAccess{
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, token);
             try (ResultSet rs = ps.executeQuery()) {
-                if (!rs.next()) return null;
+                if (!rs.next()) {
+                    return null;
+                }
                 return new AuthData(
                         rs.getString("authToken"),
                         rs.getString("username")
