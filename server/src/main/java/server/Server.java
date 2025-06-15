@@ -1,10 +1,7 @@
 package server;
 
 import chess.ChessGame;
-import dataaccess.DataAccess;
-import dataaccess.DataAccessException;
-import dataaccess.DatabaseManager;
-import dataaccess.MySqlDataAccess;
+import dataaccess.*;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -12,7 +9,6 @@ import org.mindrot.jbcrypt.BCrypt;
 import spark.Request;
 import spark.Response;
 import spark.Spark;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
@@ -38,18 +34,32 @@ public class Server {
         this.dao = tempDao;
     }
 
-
     record CreateGameRequest(String gameName) {}
     record JoinGameRequest(String playerColor, Integer gameID) {}
-
-    private static String makeToken() {
-        return UUID.randomUUID().toString();
-    }
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
         Spark.staticFiles.location("web");
 
+        setupClearDB();
+        setupRegister();
+        setupLogin();
+        setupLogout();
+        setupListGames();
+        setupCreateGame();
+        setupJoinGame();
+
+        Spark.init();
+        Spark.awaitInitialization();
+        return Spark.port();
+    }
+
+    public void stop() {
+        Spark.stop();
+        Spark.awaitStop();
+    }
+
+    private void setupClearDB() {
         Spark.delete("/db", (req, res) -> {
             res.type("application/json");
             try {
@@ -61,12 +71,13 @@ public class Server {
                 return null;
             }
         });
+    }
 
+    private void setupRegister() {
         Spark.post("/user", (req, res) -> {
             res.type("application/json");
             UserData user = parseOrBadRequest(req, res, UserData.class);
-
-            if (user.username()==null || user.password()==null || user.email()==null) {
+            if (user.username() == null || user.password() == null || user.email() == null) {
                 Spark.halt(400, errorJson("bad request"));
             }
 
@@ -81,25 +92,15 @@ public class Server {
                 }
             }
 
-            String token = makeToken();
-            try {
-                dao.createAuth(new AuthData(token, user.username()));
-            } catch (DataAccessException e) {
-                Spark.halt(500, errorJson(e.getMessage()));
-            }
-
-            res.status(200);
-            return gson.toJson(Map.of(
-                    "username",  user.username(),
-                    "authToken", token
-            ));
+            return getObject(res, user);
         });
+    }
 
+    private void setupLogin() {
         Spark.post("/session", (req, res) -> {
             res.type("application/json");
             UserData creds = parseOrBadRequest(req, res, UserData.class);
-
-            if (creds.username()==null || creds.password()==null) {
+            if (creds.username() == null || creds.password() == null) {
                 Spark.halt(400, errorJson("bad request"));
             }
 
@@ -111,25 +112,27 @@ public class Server {
                 return null;
             }
 
-            if (stored==null
-                    || !BCrypt.checkpw(creds.password(), stored.password())) {
+            if (stored == null || !BCrypt.checkpw(creds.password(), stored.password())) {
                 Spark.halt(401, errorJson("unauthorized"));
             }
 
-            String token = makeToken();
-            try {
-                dao.createAuth(new AuthData(token, creds.username()));
-            } catch (DataAccessException e) {
-                Spark.halt(500, errorJson(e.getMessage()));
-            }
-
-            res.status(200);
-            return gson.toJson(Map.of(
-                    "username",  creds.username(),
-                    "authToken", token
-            ));
+            return getObject(res, creds);
         });
+    }
 
+    private Object getObject(Response res, UserData creds) {
+        String token = makeToken();
+        try {
+            dao.createAuth(new AuthData(token, creds.username()));
+        } catch (DataAccessException e) {
+            Spark.halt(500, errorJson(e.getMessage()));
+        }
+
+        res.status(200);
+        return gson.toJson(Map.of("username", creds.username(), "authToken", token));
+    }
+
+    private void setupLogout() {
         Spark.delete("/session", (req, res) -> {
             res.type("application/json");
             String token = extractAuthToken(req, res);
@@ -141,7 +144,9 @@ public class Server {
             res.status(200);
             return "{}";
         });
+    }
 
+    private void setupListGames() {
         Spark.get("/game", (req, res) -> {
             res.type("application/json");
             extractAuthToken(req, res);
@@ -154,13 +159,15 @@ public class Server {
                 return null;
             }
         });
+    }
 
+    private void setupCreateGame() {
         Spark.post("/game", (req, res) -> {
             res.type("application/json");
-            String token = extractAuthToken(req, res);
+            extractAuthToken(req, res);
             var body = parseOrBadRequest(req, res, CreateGameRequest.class);
 
-            if (body.gameName()==null) {
+            if (body.gameName() == null) {
                 Spark.halt(400, errorJson("bad request"));
             }
 
@@ -176,17 +183,18 @@ public class Server {
             res.status(200);
             return gson.toJson(Map.of("gameID", newId));
         });
+    }
 
+    private void setupJoinGame() {
         Spark.put("/game", (req, res) -> {
             res.type("application/json");
             String token = extractAuthToken(req, res);
             var body = parseOrBadRequest(req, res, JoinGameRequest.class);
 
             String color = body.playerColor();
-            Integer gid   = body.gameID();
-            if (gid==null
-                    || color==null
-                    || !(color.equalsIgnoreCase("WHITE")||color.equalsIgnoreCase("BLACK"))) {
+            Integer gid = body.gameID();
+            if (gid == null || color == null ||
+                    !(color.equalsIgnoreCase("WHITE") || color.equalsIgnoreCase("BLACK"))) {
                 Spark.halt(400, errorJson("bad request"));
             }
 
@@ -203,14 +211,13 @@ public class Server {
             }
 
             String me = dao.getAuth(token).username();
-
             if (color.equalsIgnoreCase("WHITE")) {
-                if (game.whiteUsername()!=null) {
+                if (game.whiteUsername() != null) {
                     Spark.halt(403, errorJson("already taken"));
                 }
                 game = game.withWhiteUsername(me);
             } else {
-                if (game.blackUsername()!=null) {
+                if (game.blackUsername() != null) {
                     Spark.halt(403, errorJson("already taken"));
                 }
                 game = game.withBlackUsername(me);
@@ -225,16 +232,6 @@ public class Server {
             res.status(200);
             return "{}";
         });
-
-        //This line initializes the server and can be removed once you have a functioning endpoint
-        Spark.init();
-        Spark.awaitInitialization();
-        return Spark.port();
-    }
-
-    public void stop() {
-        Spark.stop();
-        Spark.awaitStop();
     }
 
     private String extractAuthToken(Request req, Response res) {
@@ -261,13 +258,16 @@ public class Server {
         } catch (JsonSyntaxException e) {
             res.status(400);
             res.type("application/json");
-            String err = errorJson("bad request");
-            Spark.halt(400, err);
+            Spark.halt(400, errorJson("bad request"));
             return null;
         }
     }
 
     private String errorJson(String msg) {
         return gson.toJson(Map.of("message", "Error: " + msg));
+    }
+
+    private static String makeToken() {
+        return UUID.randomUUID().toString();
     }
 }
