@@ -22,15 +22,15 @@ public class BoardRenderer {
             fileStart = 'h'; fileEnd = 'a'; fileStep = -1;
         }
 
-        System.out.print("   ");
+        System.out.print("  ");
         for (char f = fileStart; ; f += fileStep) {
-            System.out.print("  " + f + " ");
+            System.out.print(" " + f + " ");  
             if (f == fileEnd) break;
         }
         System.out.println();
 
         for (int r = rowStart; ; r += rowStep) {
-            System.out.print(" " + r + " ");
+            System.out.print(r + " ");
             for (char f = fileStart; ; f += fileStep) {
                 int fileIndex = f - 'a' + 1;
                 ChessPosition pos = new ChessPosition(r, fileIndex);
@@ -103,9 +103,9 @@ public class BoardRenderer {
             if (r == rowEnd) break;
         }
 
-        System.out.print("   ");
+        System.out.print("  ");
         for (char f = fileStart; ; f += fileStep) {
-            System.out.print("  " + f + " ");
+            System.out.print(" " + f + " ");
             if (f == fileEnd) break;
         }
         System.out.println();
