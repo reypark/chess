@@ -24,7 +24,7 @@ public class BoardRenderer {
 
         System.out.print("  ");
         for (char f = fileStart; ; f += fileStep) {
-            System.out.print(" " + f + " ");  
+            System.out.print(" " + f + " ");
             if (f == fileEnd) break;
         }
         System.out.println();

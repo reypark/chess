@@ -160,10 +160,6 @@ public class ServerFacade {
         }
     }
 
-//    public GameData observeGame(String authToken, int gameId) {
-//        return getGameState(authToken, gameId);
-//    }
-
     public GameData getGameState(String authToken, int gameId) {
         return listGames(authToken)
                 .stream()
