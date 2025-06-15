@@ -24,11 +24,20 @@ public class Server {
     private final DataAccess dao;
     private final Gson gson = new Gson();
 
-    public Server() throws DataAccessException {
-        DatabaseManager.createDatabase();
-        DatabaseManager.createTables();
-        this.dao = new MySqlDataAccess();
+    public Server() {
+        DataAccess tempDao = null;
+        try {
+            DatabaseManager.createDatabase();
+            DatabaseManager.createTables();
+            tempDao = new MySqlDataAccess();
+        } catch (DataAccessException e) {
+            System.err.println("FATAL: Failed to initialize Server: " + e.getMessage());
+            e.printStackTrace();
+            Spark.halt(500, gson.toJson(Map.of("message", "Error: Server initialization failed")));
+        }
+        this.dao = tempDao;
     }
+
 
     record CreateGameRequest(String gameName) {}
     record JoinGameRequest(String playerColor, Integer gameID) {}
