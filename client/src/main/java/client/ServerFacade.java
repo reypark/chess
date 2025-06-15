@@ -19,7 +19,7 @@ public class ServerFacade {
     private final Gson gson = new Gson();
 
     public ServerFacade(int port) {
-        this.baseUrl = "http://localhost:" + port;
+        this.baseUrl   = "http://localhost:" + port;
         this.httpClient = HttpClient.newHttpClient();
     }
 
@@ -43,7 +43,7 @@ public class ServerFacade {
             var body = gson.toJson(Map.of(
                     "username", username,
                     "password", password,
-                    "email", email
+                    "email",    email
             ));
             HttpRequest req = HttpRequest.newBuilder()
                     .uri(URI.create(baseUrl + "/user"))
@@ -111,9 +111,8 @@ public class ServerFacade {
             if (resp.statusCode() != 200) {
                 throw new RuntimeException("HTTP " + resp.statusCode());
             }
-            Type gamesListType = new TypeToken<Map<String, List<GameData>>>() {
-            }.getType();
-            Map<String, List<GameData>> map = gson.fromJson(resp.body(), gamesListType);
+            Type gamesListType = new TypeToken<Map<String, List<GameData>>>(){}.getType();
+            Map<String,List<GameData>> map = gson.fromJson(resp.body(), gamesListType);
             return map.get("games");
         } catch (Exception e) {
             throw new RuntimeException("Failed to list games", e);
@@ -133,7 +132,7 @@ public class ServerFacade {
             if (resp.statusCode() != 200) {
                 throw new RuntimeException("HTTP " + resp.statusCode());
             }
-            Map<String, Double> map = gson.fromJson(resp.body(), Map.class);
+            Map<String,Double> map = gson.fromJson(resp.body(), Map.class);
             return map.get("gameID").intValue();
         } catch (Exception e) {
             throw new RuntimeException("Failed to create game", e);
@@ -143,7 +142,7 @@ public class ServerFacade {
     public void joinGame(int gameId, String color, String authToken) {
         try {
             var body = gson.toJson(Map.of(
-                    "gameID", gameId,
+                    "gameID",     gameId,
                     "playerColor", color
             ));
             HttpRequest req = HttpRequest.newBuilder()
@@ -159,5 +158,17 @@ public class ServerFacade {
         } catch (Exception e) {
             throw new RuntimeException("Failed to join game", e);
         }
+    }
+
+//    public GameData observeGame(String authToken, int gameId) {
+//        return getGameState(authToken, gameId);
+//    }
+
+    public GameData getGameState(String authToken, int gameId) {
+        return listGames(authToken)
+                .stream()
+                .filter(g -> g.gameID() == gameId)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Game not found"));
     }
 }
