@@ -1,7 +1,9 @@
 package chess;
 
-import java.util.ArrayList;
+import chess.pieceMoveCalculators.*;
+
 import java.util.Collection;
+import java.util.Objects;
 
 /**
  * Represents a single chess piece
@@ -51,6 +53,31 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        return new ArrayList<>();
+        PieceMoveCalculator calculator = switch (pieceType) {
+            case BISHOP -> new BishopMoveCalculator();
+            case KING -> new KingMoveCalculator();
+            case KNIGHT -> new KnightMoveCalculator();
+            case PAWN -> new PawnMoveCalculator();
+            case QUEEN -> new QueenMoveCalculator();
+            case ROOK -> new RookMoveCalculator();
+        };
+        return calculator.calculateMoves(board, myPosition);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessPiece piece = (ChessPiece) o;
+        return pieceColor == piece.pieceColor && pieceType == piece.pieceType;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pieceColor, pieceType);
     }
 }
