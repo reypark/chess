@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class BishopMoveCalculator extends PieceMoveCalculator {
-    private static final int[][] DIAGONALS = {
+    private static final int[][] DIAGONAL_OFFSETS = {
             { 1, 1 },
             { 1, -1 },
             { -1, 1 },
@@ -28,7 +28,7 @@ public class BishopMoveCalculator extends PieceMoveCalculator {
         int startRow = origin.getRow();
         int startCol = origin.getColumn();
 
-        for (int[] d : DIAGONALS) {
+        for (int[] d : DIAGONAL_OFFSETS) {
             int dRow = d[0];
             int dColumn = d[1];
             int row = startRow;
@@ -41,12 +41,12 @@ public class BishopMoveCalculator extends PieceMoveCalculator {
                 }
 
                 ChessPosition destination = new ChessPosition(row, column);
-                ChessPiece occ = board.getPiece(destination);
+                ChessPiece occupant = board.getPiece(destination);
 
-                if (occ == null) {
+                if (occupant == null) {
                     moves.add(new ChessMove(origin, destination, null));
                 } else {
-                    if (occ.getTeamColor() != myColor) {
+                    if (occupant.getTeamColor() != myColor) {
                         moves.add(new ChessMove(origin, destination, null));
                     }
                     break;
