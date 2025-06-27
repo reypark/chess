@@ -9,11 +9,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class RookMoveCalculator extends PieceMoveCalculator {
-    private static final int[][] RANK_FILE_OFFSET = {
+    private static final int[][] RANK_FILE_OFFSETS = {
             { 1, 0 },
             { -1, 0 },
-            {  0, 1 },
-            {  0, -1 },
+            { 0, 1 },
+            { 0, -1 },
     };
 
     @Override
@@ -28,7 +28,7 @@ public class RookMoveCalculator extends PieceMoveCalculator {
         int startRow = origin.getRow();
         int startCol = origin.getColumn();
 
-        for (int[] offset : RANK_FILE_OFFSET) {
+        for (int[] offset : RANK_FILE_OFFSETS) {
             int dRow = offset[0];
             int dColumn = offset[1];
             int row = startRow;
