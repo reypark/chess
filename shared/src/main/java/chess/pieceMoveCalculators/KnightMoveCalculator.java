@@ -32,9 +32,9 @@ public class KnightMoveCalculator extends PieceMoveCalculator {
         int startRow = origin.getRow();
         int startCol = origin.getColumn();
 
-        for (int[] m : DIAGONAL_OFFSETS) {
-            int dRow = m[0];
-            int dColumn = m[1];
+        for (int[] offset : DIAGONAL_OFFSETS) {
+            int dRow = offset[0];
+            int dColumn = offset[1];
             int row = startRow + dRow;
             int column = startCol + dColumn;
 

@@ -28,9 +28,9 @@ public class BishopMoveCalculator extends PieceMoveCalculator {
         int startRow = origin.getRow();
         int startCol = origin.getColumn();
 
-        for (int[] d : DIAGONAL_OFFSETS) {
-            int dRow = d[0];
-            int dColumn = d[1];
+        for (int[] offset : DIAGONAL_OFFSETS) {
+            int dRow = offset[0];
+            int dColumn = offset[1];
             int row = startRow;
             int column = startCol;
             while (true) {
