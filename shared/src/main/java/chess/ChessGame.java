@@ -22,6 +22,11 @@ public class ChessGame {
         this.teamTurn = TeamColor.WHITE;
     }
 
+    public ChessGame(ChessBoard board, TeamColor turn) {
+        this.board = board;
+        this.teamTurn = turn;
+    }
+
     /**
      * @return Which team's turn it is
      */
@@ -59,17 +64,40 @@ public class ChessGame {
             return null;
         }
 
-        var rawMoves = piece.pieceMoves(board, startPosition);
+        TeamColor moverColor = piece.getTeamColor();
+        Collection<ChessMove> rawMoves = piece.pieceMoves(board, startPosition);
         List<ChessMove> legalMoves = new ArrayList<>();
 
         for (ChessMove move : rawMoves) {
-            ChessBoard snapshotBoard = board.deepCopy();
-            snapshotBoard.addPiece(move.getEndPosition(), piece);
-            snapshotBoard.addPiece(startPosition, null);
-            ChessGame simulatedGame = new ChessGame();
-            simulatedGame.setBoard(snapshotBoard);
-            simulatedGame.setTeamTurn(teamTurn);
-            if (!simulatedGame.isInCheck(teamTurn)) {
+            ChessBoard snapshot = board.deepCopy();
+
+            ChessPiece toPlace = piece;
+            if (piece.getPieceType() == ChessPiece.PieceType.PAWN
+                    && move.getPromotionPiece() != null
+                    && (move.getEndPosition().getRow() == 1
+                    || move.getEndPosition().getRow() == 8)) {
+                toPlace = new ChessPiece(moverColor, move.getPromotionPiece());
+            }
+
+            snapshot.addPiece(move.getEndPosition(), toPlace);
+            snapshot.addPiece(startPosition, null);
+
+            boolean kingStillThere = false;
+            for (ChessPosition pos : snapshot.getAllPositions()) {
+                ChessPiece occupant = snapshot.getPiece(pos);
+                if (occupant != null
+                        && occupant.getTeamColor() == moverColor
+                        && occupant.getPieceType() == ChessPiece.PieceType.KING) {
+                    kingStillThere = true;
+                    break;
+                }
+            }
+            if (!kingStillThere) {
+                continue;
+            }
+
+            ChessGame simulated = new ChessGame(snapshot, moverColor);
+            if (!simulated.isInCheck(moverColor)) {
                 legalMoves.add(move);
             }
         }
@@ -87,17 +115,26 @@ public class ChessGame {
         if (piece == null) {
             throw new InvalidMoveException("No piece at start position");
         }
-
         if (piece.getTeamColor() != teamTurn) {
-            throw new InvalidMoveException("It's not " + piece.getTeamColor() + "'s turn");
+            throw new InvalidMoveException("It's not " + teamTurn + "'s turn");
         }
-
-        ChessPiece destPiece = board.getPiece(move.getEndPosition());
-        if (destPiece != null && destPiece.getTeamColor() == piece.getTeamColor()) {
+        ChessPiece target = board.getPiece(move.getEndPosition());
+        if (target != null && target.getTeamColor() == teamTurn) {
             throw new InvalidMoveException("Cannot capture own piece");
         }
 
-        board.addPiece(move.getEndPosition(), piece);
+        Collection<ChessMove> legal = validMoves(move.getStartPosition());
+        if (legal == null || !legal.contains(move)) {
+            throw new InvalidMoveException("Illegal move");
+        }
+
+        ChessPiece toPlace = piece;
+        if (piece.getPieceType() == ChessPiece.PieceType.PAWN
+                && move.getPromotionPiece() != null
+                && (move.getEndPosition().getRow() == 1 || move.getEndPosition().getRow() == 8)) {
+            toPlace = new ChessPiece(teamTurn, move.getPromotionPiece());
+        }
+        board.addPiece(move.getEndPosition(), toPlace);
         board.addPiece(move.getStartPosition(), null);
 
         if (teamTurn == TeamColor.WHITE) {
