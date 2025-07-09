@@ -1,6 +1,8 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -82,6 +84,39 @@ public class ChessBoard {
             ChessPiece piece = new ChessPiece(color, order[i]);
             addPiece(pos, piece);
         }
+    }
+
+    public List<ChessPosition> getAllPositions() {
+        List<ChessPosition> positions = new ArrayList<>();
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                positions.add(new ChessPosition(row, col));
+            }
+        }
+        return positions;
+    }
+
+    public ChessPosition findKingPosition(ChessGame.TeamColor color) {
+        for (ChessPosition position : getAllPositions()) {
+            ChessPiece piece = getPiece(position);
+            if (piece != null
+                    && piece.getTeamColor() == color
+                    && piece.getPieceType() == ChessPiece.PieceType.KING) {
+                return position;
+            }
+        }
+        throw new IllegalStateException("No king found for " + color);
+    }
+
+    public ChessBoard deepCopy() {
+        ChessBoard clone = new ChessBoard();
+        for (ChessPosition position : getAllPositions()) {
+            ChessPiece piece = getPiece(position);
+            if (piece != null) {
+                clone.addPiece(position, piece);
+            }
+        }
+        return clone;
     }
 
     @Override

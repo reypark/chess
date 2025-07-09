@@ -1,6 +1,8 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -57,7 +59,21 @@ public class ChessGame {
             return null;
         }
 
-        return piece.pieceMoves(board, startPosition);
+        var rawMoves = piece.pieceMoves(board, startPosition);
+        List<ChessMove> legalMoves = new ArrayList<>();
+
+        for (ChessMove move : rawMoves) {
+            ChessBoard snapshotBoard = board.deepCopy();
+            snapshotBoard.addPiece(move.getEndPosition(), piece);
+            snapshotBoard.addPiece(startPosition, null);
+            ChessGame simulatedGame = new ChessGame();
+            simulatedGame.setBoard(snapshotBoard);
+            simulatedGame.setTeamTurn(teamTurn);
+            if (!simulatedGame.isInCheck(teamTurn)) {
+                legalMoves.add(move);
+            }
+        }
+        return legalMoves;
     }
 
     /**
@@ -98,7 +114,19 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        ChessPosition kingPosition = board.findKingPosition(teamColor);
+
+        for (ChessPosition position : board.getAllPositions()) {
+            ChessPiece piece = board.getPiece(position);
+            if (piece != null && piece.getTeamColor() != teamColor) {
+                for (ChessMove move : piece.pieceMoves(board, position)) {
+                    if (move.getEndPosition().equals(kingPosition)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**
