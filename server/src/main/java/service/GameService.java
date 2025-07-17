@@ -46,7 +46,9 @@ public class GameService {
     public CreateGameResult createGame(String authToken, CreateGameRequest req)
             throws DataAccessException {
         AuthData auth = authDao.getAuth(authToken);
-        if (auth == null) throw new DataAccessException("unauthorized");
+        if (auth == null) {
+            throw new DataAccessException("unauthorized");
+        }
         if (req.gameName() == null || req.gameName().isBlank()) {
             throw new DataAccessException("bad request");
         }
@@ -65,14 +67,18 @@ public class GameService {
     public void joinGame(String authToken, JoinGameRequest req)
             throws DataAccessException {
         AuthData auth = authDao.getAuth(authToken);
-        if (auth == null) throw new DataAccessException("unauthorized");
+        if (auth == null) {
+            throw new DataAccessException("unauthorized");
+        }
 
         if (req.playerColor() == null) {
             throw new DataAccessException("bad request");
         }
 
         GameData existing = gameDao.getGame(req.gameID());
-        if (existing == null) throw new DataAccessException("bad request");
+        if (existing == null) {
+            throw new DataAccessException("bad request");
+        }
 
         GameData updated;
         switch (req.playerColor()) {

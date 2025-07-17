@@ -89,6 +89,16 @@ public class Server {
             return "{}";
         });
 
+        registerExceptionHandlers();
+
+        //This line initializes the server and can be removed once you have a functioning endpoint 
+        Spark.init();
+
+        Spark.awaitInitialization();
+        return Spark.port();
+    }
+
+    private void registerExceptionHandlers() {
         Spark.exception(DataAccessException.class, (ex, req, res) -> {
             String msg = ex.getMessage();
             int status;
@@ -114,14 +124,6 @@ public class Server {
             res.type("application/json");
             res.body(gson.toJson(Map.of("message", "Error: " + ex.getMessage())));
         });
-
-
-
-        //This line initializes the server and can be removed once you have a functioning endpoint 
-        Spark.init();
-
-        Spark.awaitInitialization();
-        return Spark.port();
     }
 
     public void stop() {
