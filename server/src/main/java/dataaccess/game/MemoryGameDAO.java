@@ -13,7 +13,7 @@ public class MemoryGameDAO implements GameDAO {
     private int nextId = 1;
 
     @Override
-    public GameData createGame(GameData game) throws DataAccessException {
+    public GameData createGame(GameData game) {
         int id = nextId++;
         GameData withId = new GameData(id, game.whiteUsername(), game.blackUsername(), game.gameName(), game.game());
         store.put(id, withId);
@@ -30,25 +30,21 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     @Override
-    public List<GameData> listGames() throws DataAccessException {
+    public List<GameData> listGames() {
         return new ArrayList<>(store.values());
     }
 
     @Override
     public void updateGame(GameData game) throws DataAccessException {
-        if (!store.containsKey(game.gameID())) {
-            throw new DataAccessException("Cannot update, game not found: " + game.gameID());
+        int id = game.gameID();
+        if (!store.containsKey(id)) {
+            throw new DataAccessException("Cannot update, game not found: " + id);
         }
-        store.put(game.gameID(), game);
+        store.put(id, game);
     }
 
     @Override
-    public void deleteGame(int gameID) throws DataAccessException {
-        store.remove(gameID);
-    }
-
-    @Override
-    public void clear() throws DataAccessException {
+    public void clear() {
         store.clear();
         nextId = 1;
     }
