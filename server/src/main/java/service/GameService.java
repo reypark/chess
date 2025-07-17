@@ -33,7 +33,6 @@ public class GameService {
     }
 
     public List<GameData> listGames(String authToken) throws DataAccessException {
-        // swallow the DAO exception and rethrow our own "unauthorized"
         try {
             authDao.getAuth(authToken);
         } catch (DataAccessException e) {
