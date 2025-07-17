@@ -19,34 +19,47 @@ public class UserService {
         this.authDao = authDao;
     }
 
+    public void clear() throws DataAccessException {
+        authDao.clear();
+        userDao.clear();
+    }
+
     public RegisterResult register(RegisterRequest req) throws DataAccessException {
-        if (req.username() == null || req.password() == null || req.email() == null) {
+        if (req.username()==null || req.password()==null || req.email()==null) {
             throw new DataAccessException("bad request");
         }
+        boolean userExists = true;
         try {
             userDao.getUser(req.username());
-            throw new DataAccessException("already taken");
         } catch (DataAccessException e) {
+            userExists = false;
         }
-        userDao.createUser(new UserData(req.username(), req.password(), req.email()));
+        if (userExists) {
+            throw new DataAccessException("User already exists: " + req.username());
+        }
 
+        userDao.createUser(new UserData(req.username(), req.password(), req.email()));
         String token = UUID.randomUUID().toString();
         authDao.createAuth(new AuthData(token, req.username()));
-
         return new RegisterResult(req.username(), token);
     }
+
 
     public LoginResult login(LoginRequest req) throws DataAccessException {
         if (req.username() == null || req.password() == null) {
             throw new DataAccessException("bad request");
         }
-        var user = userDao.getUser(req.username());
-        if (!user.password().equals(req.password())) {
+        UserData user;
+        try {
+            user = userDao.getUser(req.username());
+        } catch (DataAccessException dbErr) {
+            throw dbErr;
+        }
+        if (user == null || !user.password().equals(req.password())) {
             throw new DataAccessException("unauthorized");
         }
         String token = UUID.randomUUID().toString();
         authDao.createAuth(new AuthData(token, req.username()));
-
         return new LoginResult(req.username(), token);
     }
 
