@@ -22,8 +22,8 @@ public class MemoryAuthDAO implements AuthDAO {
 
     @Override
     public void deleteAuth(String token) throws DataAccessException {
-        if (!store.containsKey(token)) {
-            throw new DataAccessException("unauthorized");
+        if (token == null || !store.containsKey(token)) {
+            throw new DataAccessException("AuthToken not found");
         }
         store.remove(token);
     }

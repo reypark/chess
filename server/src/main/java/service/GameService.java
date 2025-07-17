@@ -33,8 +33,12 @@ public class GameService {
     }
 
     public List<GameData> listGames(String authToken) throws DataAccessException {
-        AuthData auth = authDao.getAuth(authToken);
-        if (auth == null) throw new DataAccessException("unauthorized");
+        // swallow the DAO exception and rethrow our own "unauthorized"
+        try {
+            authDao.getAuth(authToken);
+        } catch (DataAccessException e) {
+            throw new DataAccessException("unauthorized");
+        }
         return gameDao.listGames().stream()
                 .sorted(Comparator.comparingInt(GameData::gameID))
                 .collect(Collectors.toList());
