@@ -74,4 +74,8 @@ public class DatabaseManager {
         var port = Integer.parseInt(props.getProperty("db.port"));
         connectionUrl = String.format("jdbc:mysql://%s:%d", host, port);
     }
+
+    public static void initialize() throws DataAccessException {
+        createDatabase();
+    }
 }
