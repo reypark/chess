@@ -3,9 +3,9 @@ package server;
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import dataaccess.DatabaseManager;
-import dataaccess.auth.MemoryAuthDAO;
+import dataaccess.auth.SQLAuthDAO;
 import dataaccess.game.MemoryGameDAO;
-import dataaccess.user.MemoryUserDAO;
+import dataaccess.user.SQLUserDAO;
 import service.GameService;
 import service.UserService;
 import service.requests.*;
@@ -29,8 +29,8 @@ public class Server {
 
         Spark.staticFiles.location("web");
 
-        var authDao = new MemoryAuthDAO();
-        var userDao = new MemoryUserDAO();
+        var authDao = new SQLAuthDAO();
+        var userDao = new SQLUserDAO();
         var gameDao = new MemoryGameDAO();
 
         userService = new UserService(userDao, authDao);
