@@ -2,9 +2,8 @@ package server;
 
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
-import dataaccess.DatabaseManager;
 import dataaccess.auth.SQLAuthDAO;
-import dataaccess.game.MemoryGameDAO;
+import dataaccess.game.SQLGameDAO;
 import dataaccess.user.SQLUserDAO;
 import service.GameService;
 import service.UserService;
@@ -20,18 +19,13 @@ public class Server {
     private GameService gameService;
 
     public int run(int desiredPort) {
-        try {
-            DatabaseManager.initialize();
-        } catch (DataAccessException e) {
-            throw new RuntimeException("Failed to initialize database", e);
-        }
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("web");
 
-        var authDao = new SQLAuthDAO();
         var userDao = new SQLUserDAO();
-        var gameDao = new MemoryGameDAO();
+        var authDao = new SQLAuthDAO();
+        var gameDao = new SQLGameDAO();
 
         userService = new UserService(userDao, authDao);
         gameService = new GameService(userDao, authDao, gameDao);
