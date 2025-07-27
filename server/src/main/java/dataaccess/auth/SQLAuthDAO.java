@@ -1,85 +1,96 @@
 package dataaccess.auth;
 
-import dataaccess.DataAccessException;
 import dataaccess.DatabaseManager;
+import dataaccess.DataAccessException;
 import model.AuthData;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class SQLAuthDAO implements AuthDAO {
-    private static final String INSERT_SQL =
-            "INSERT INTO auth (auth_token, username) VALUES (?, ?)";
-    private static final String SELECT_SQL =
-            "SELECT auth_token, username FROM auth WHERE auth_token = ?";
-    private static final String DELETE_SQL =
-            "DELETE FROM auth WHERE auth_token = ?";
-    private static final String CLEAR_SQL =
-            "DELETE FROM auth";
+    private static final String[] createStatements = {
+        """
+        CREATE TABLE IF NOT EXISTS auth (
+          auth_token VARCHAR(36) PRIMARY KEY,
+          username VARCHAR(50) NOT NULL,
+          FOREIGN KEY (username) REFERENCES users(username) ON DELETE CASCADE
+        )
+        """
+    };
+
+    public SQLAuthDAO() {
+        try {
+            configureDatabase();
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Unable to initialize auth table", e);
+        }
+    }
+
+    private void configureDatabase() throws DataAccessException {
+        DatabaseManager.createDatabase();
+        try (var conn = DatabaseManager.getConnection()) {
+            for (String stmt : createStatements) {
+                try (var ps = conn.prepareStatement(stmt)) {
+                    ps.executeUpdate();
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Unable to configure auth table: " + e.getMessage(), e);
+        }
+    }
 
     @Override
     public void createAuth(AuthData auth) throws DataAccessException {
-        try (Connection connection = DatabaseManager.getConnection();
-             PreparedStatement insertAuthStatement = connection.prepareStatement(INSERT_SQL)) {
-
-            insertAuthStatement.setString(1, auth.authToken());
-            insertAuthStatement.setString(2, auth.username());
-            insertAuthStatement.executeUpdate();
-
-        } catch (SQLException sqlException) {
-            throw new DataAccessException(
-                    "Error creating auth token: " + auth.authToken(), sqlException);
+        String sql = "INSERT INTO auth (auth_token, username) VALUES (?, ?)";
+        try (var conn = DatabaseManager.getConnection();
+             var ps = conn.prepareStatement(sql)) {
+            ps.setString(1, auth.authToken());
+            ps.setString(2, auth.username());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("Error creating auth: " + e.getMessage(), e);
         }
     }
 
     @Override
-    public AuthData getAuth(String authToken) throws DataAccessException {
-        try (Connection connection = DatabaseManager.getConnection();
-             PreparedStatement selectAuthStatement = connection.prepareStatement(SELECT_SQL)) {
-
-            selectAuthStatement.setString(1, authToken);
-            try (ResultSet resultSet = selectAuthStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    return new AuthData(
-                            resultSet.getString("auth_token"),
-                            resultSet.getString("username")
-                    );
+    public AuthData getAuth(String token) throws DataAccessException {
+        String sql = "SELECT auth_token, username FROM auth WHERE auth_token = ?";
+        try (var conn = DatabaseManager.getConnection();
+             var ps = conn.prepareStatement(sql)) {
+            ps.setString(1, token);
+            try (var rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new AuthData(rs.getString("auth_token"), rs.getString("username"));
                 }
-                return null;
             }
-
-        } catch (SQLException sqlException) {
-            throw new DataAccessException(
-                    "Error fetching auth token: " + authToken, sqlException);
+        } catch (SQLException e) {
+            throw new DataAccessException("Error retrieving auth: " + e.getMessage(), e);
         }
+        throw new DataAccessException("AuthToken not found");
     }
 
     @Override
-    public void deleteAuth(String authToken) throws DataAccessException {
-        try (Connection connection = DatabaseManager.getConnection();
-             PreparedStatement deleteAuthStatement = connection.prepareStatement(DELETE_SQL)) {
-
-            deleteAuthStatement.setString(1, authToken);
-            deleteAuthStatement.executeUpdate();
-
-        } catch (SQLException sqlException) {
-            throw new DataAccessException(
-                    "Error deleting auth token: " + authToken, sqlException);
+    public void deleteAuth(String token) throws DataAccessException {
+        String sql = "DELETE FROM auth WHERE auth_token = ?";
+        try (var conn = DatabaseManager.getConnection();
+             var ps = conn.prepareStatement(sql)) {
+            ps.setString(1, token);
+            int rows = ps.executeUpdate();
+            if (rows == 0) {
+                throw new DataAccessException("AuthToken not found");
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Error deleting auth: " + e.getMessage(), e);
         }
     }
 
     @Override
     public void clear() throws DataAccessException {
-        try (Connection connection = DatabaseManager.getConnection();
-             PreparedStatement clearAuthStatement = connection.prepareStatement(CLEAR_SQL)) {
-
-            clearAuthStatement.executeUpdate();
-
-        } catch (SQLException sqlException) {
-            throw new DataAccessException(
-                    "Error clearing auth table", sqlException);
+        String sql = "DELETE FROM auth";
+        try (var conn = DatabaseManager.getConnection();
+             var ps = conn.prepareStatement(sql)) {
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("Error clearing auth: " + e.getMessage(), e);
         }
     }
 }
