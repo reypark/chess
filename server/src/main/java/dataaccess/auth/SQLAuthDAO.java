@@ -7,7 +7,7 @@ import model.AuthData;
 import java.sql.SQLException;
 
 public class SQLAuthDAO implements AuthDAO {
-    private static final String[] createStatements = {
+    private static final String[] CREATE_STATEMENTS = {
         """
         CREATE TABLE IF NOT EXISTS auth (
           auth_token VARCHAR(36) PRIMARY KEY,
@@ -28,7 +28,7 @@ public class SQLAuthDAO implements AuthDAO {
     private void configureDatabase() throws DataAccessException {
         DatabaseManager.createDatabase();
         try (var conn = DatabaseManager.getConnection()) {
-            for (String stmt : createStatements) {
+            for (String stmt : CREATE_STATEMENTS) {
                 try (var ps = conn.prepareStatement(stmt)) {
                     ps.executeUpdate();
                 }

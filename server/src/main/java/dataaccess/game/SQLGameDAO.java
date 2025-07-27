@@ -59,8 +59,12 @@ public class SQLGameDAO implements GameDAO {
         String json = gson.toJson(game.game());
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
-            if (game.whiteUsername() != null) ps.setString(1, game.whiteUsername()); else ps.setNull(1, Types.VARCHAR);
-            if (game.blackUsername() != null) ps.setString(2, game.blackUsername()); else ps.setNull(2, Types.VARCHAR);
+            if (game.whiteUsername() != null) {
+                ps.setString(1, game.whiteUsername());
+            } else ps.setNull(1, Types.VARCHAR); {}
+            if (game.blackUsername() != null) {
+                ps.setString(2, game.blackUsername());
+            } else ps.setNull(2, Types.VARCHAR); {}
             ps.setString(3, game.gameName());
             ps.setString(4, json);
             ps.executeUpdate();
@@ -85,7 +89,11 @@ public class SQLGameDAO implements GameDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     ChessGame cg = gson.fromJson(rs.getString("state_json"), ChessGame.class);
-                    return new GameData(rs.getInt("id"), rs.getString("white_username"), rs.getString("black_username"), rs.getString("game_name"), cg);
+                    return new GameData(
+                            rs.getInt("id"),
+                            rs.getString("white_username"),
+                            rs.getString("black_username"),
+                            rs.getString("game_name"), cg);
                 }
             }
         } catch (SQLException e) {
@@ -103,7 +111,11 @@ public class SQLGameDAO implements GameDAO {
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 ChessGame cg = gson.fromJson(rs.getString("state_json"), ChessGame.class);
-                list.add(new GameData(rs.getInt("id"), rs.getString("white_username"), rs.getString("black_username"), rs.getString("game_name"), cg));
+                list.add(
+                        new GameData(rs.getInt("id"),
+                        rs.getString("white_username"),
+                        rs.getString("black_username"),
+                        rs.getString("game_name"), cg));
             }
         } catch (SQLException e) {
             throw new DataAccessException("Error listing games: " + e.getMessage(), e);
@@ -117,8 +129,12 @@ public class SQLGameDAO implements GameDAO {
         String json = gson.toJson(game.game());
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            if (game.whiteUsername() != null) ps.setString(1, game.whiteUsername()); else ps.setNull(1, Types.VARCHAR);
-            if (game.blackUsername() != null) ps.setString(2, game.blackUsername()); else ps.setNull(2, Types.VARCHAR);
+            if (game.whiteUsername() != null) {
+                ps.setString(1, game.whiteUsername());
+            } else ps.setNull(1, Types.VARCHAR); {}
+            if (game.blackUsername() != null) {
+                ps.setString(2, game.blackUsername());
+            } else ps.setNull(2, Types.VARCHAR); {}
             ps.setString(3, json);
             ps.setInt(4, game.gameID());
             int rows = ps.executeUpdate();
