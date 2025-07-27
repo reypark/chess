@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SQLGameDAO implements GameDAO {
-    private static final String[] createStatements = {
+    private static final String[] CREATE_STATEMENTS = {
         """
         CREATE TABLE IF NOT EXISTS games (
           id INT NOT NULL AUTO_INCREMENT,
@@ -43,7 +43,7 @@ public class SQLGameDAO implements GameDAO {
     private void configureDatabase() throws DataAccessException {
         DatabaseManager.createDatabase();
         try (var conn = DatabaseManager.getConnection()) {
-            for (String stmt : createStatements) {
+            for (String stmt : CREATE_STATEMENTS) {
                 try (var ps = conn.prepareStatement(stmt)) {
                     ps.executeUpdate();
                 }
@@ -61,10 +61,14 @@ public class SQLGameDAO implements GameDAO {
              PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
             if (game.whiteUsername() != null) {
                 ps.setString(1, game.whiteUsername());
-            } else ps.setNull(1, Types.VARCHAR); {}
+            } else {
+                ps.setNull(1, Types.VARCHAR);
+            }
             if (game.blackUsername() != null) {
                 ps.setString(2, game.blackUsername());
-            } else ps.setNull(2, Types.VARCHAR); {}
+            } else {
+                ps.setNull(2, Types.VARCHAR);
+            }
             ps.setString(3, game.gameName());
             ps.setString(4, json);
             ps.executeUpdate();
@@ -131,10 +135,14 @@ public class SQLGameDAO implements GameDAO {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             if (game.whiteUsername() != null) {
                 ps.setString(1, game.whiteUsername());
-            } else ps.setNull(1, Types.VARCHAR); {}
+            } else {
+                ps.setNull(1, Types.VARCHAR);
+            }
             if (game.blackUsername() != null) {
                 ps.setString(2, game.blackUsername());
-            } else ps.setNull(2, Types.VARCHAR); {}
+            } else {
+                ps.setNull(2, Types.VARCHAR);
+            }
             ps.setString(3, json);
             ps.setInt(4, game.gameID());
             int rows = ps.executeUpdate();

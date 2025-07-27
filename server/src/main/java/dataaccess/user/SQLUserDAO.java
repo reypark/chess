@@ -10,7 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class SQLUserDAO implements UserDAO {
-    private static final String[] createStatements = {
+    private static final String[] CREATE_STATEMENTS = {
         """
         CREATE TABLE IF NOT EXISTS users (
           username VARCHAR(50) PRIMARY KEY,
@@ -31,7 +31,7 @@ public class SQLUserDAO implements UserDAO {
     private void configureDatabase() throws DataAccessException {
         DatabaseManager.createDatabase();
         try (var conn = DatabaseManager.getConnection()) {
-            for (String stmt : createStatements) {
+            for (String stmt : CREATE_STATEMENTS) {
                 try (var ps = conn.prepareStatement(stmt)) {
                     ps.executeUpdate();
                 }
