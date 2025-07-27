@@ -36,7 +36,10 @@ public class GameService {
         try {
             authDao.getAuth(authToken);
         } catch (DataAccessException e) {
-            throw new DataAccessException("unauthorized");
+            if ("AuthToken not found".equals(e.getMessage())) {
+                throw new DataAccessException("unauthorized");
+            }
+            throw e;
         }
         return gameDao.listGames().stream()
                 .sorted(Comparator.comparingInt(GameData::gameID))

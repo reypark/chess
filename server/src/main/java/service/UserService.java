@@ -5,6 +5,7 @@ import dataaccess.auth.AuthDAO;
 import dataaccess.DataAccessException;
 import model.UserData;
 import model.AuthData;
+import org.mindrot.jbcrypt.BCrypt;
 import service.requests.*;
 import service.results.*;
 
@@ -49,13 +50,22 @@ public class UserService {
         if (req.username() == null || req.password() == null) {
             throw new DataAccessException("bad request");
         }
-        UserData user;
-        try {
-            user = userDao.getUser(req.username());
-        } catch (DataAccessException dbErr) {
-            throw dbErr;
+        UserData user = userDao.getUser(req.username());
+        String stored = user.password();
+        boolean matches = false;
+
+        if (stored.equals(req.password())) {
+            matches = true;
+        } else {
+            try {
+                if (BCrypt.checkpw(req.password(), stored)) {
+                    matches = true;
+                }
+            } catch (IllegalArgumentException e) {
+            }
         }
-        if (user == null || !user.password().equals(req.password())) {
+
+        if (!matches) {
             throw new DataAccessException("unauthorized");
         }
         String token = UUID.randomUUID().toString();
