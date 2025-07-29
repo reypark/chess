@@ -1,7 +1,9 @@
+package client;
+
 import java.util.Scanner;
 
 public class Repl {
-    private enum State {LOGGED_OUT}
+    private enum State {LOGGED_OUT, LOGGED_IN}
     private State state = State.LOGGED_OUT;
 
     public void run() {
